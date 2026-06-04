@@ -19,6 +19,7 @@ func main() {
 	router.POST("/addmovie", controller.AddMovie())
 	// User routes
 	router.POST("/register", controller.Register())
+	router.POST("/login", controller.LoginUser())
 
 	if err := router.Run(":8080"); err != nil {
 		fmt.Println("Failed to start Server", err)

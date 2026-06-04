@@ -7,6 +7,7 @@ import (
 
 	database "github.com/faisal-shakeel/StreamMovies/Server/StreamMoviesServer/database"
 	models "github.com/faisal-shakeel/StreamMovies/Server/StreamMoviesServer/models"
+	"github.com/faisal-shakeel/StreamMovies/Server/StreamMoviesServer/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -103,6 +104,30 @@ func LoginUser() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Email or Password"})
 			return
 		}
+
+		token, refreshToken, err := utils.GenerateAllTokens(FoundUser.Email, FoundUser.FirstName, FoundUser.LastName, FoundUser.Role, FoundUser.UserID)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate tokens"})
+			return
+		}
+
+		err = utils.UpdateAllTokens(FoundUser.UserID, token, refreshToken)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update tokens"})
+			return
+		}
+		c.JSON(http.StatusOK, models.UserResponse{
+			UserID:          FoundUser.UserID,
+			FirstName:       FoundUser.FirstName,
+			LastName:        FoundUser.LastName,
+			Email:           FoundUser.Email,
+			Role:            FoundUser.Role,
+			FavourtieGenres: FoundUser.FavouriteGenres,
+			Token:           token,
+			RefreshToken:    refreshToken,
+		})
 
 	}
 }
